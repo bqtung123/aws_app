@@ -7,40 +7,20 @@
 threads_count = ENV.fetch("RAILS_MAX_THREADS") { 5 }
 threads threads_count, threads_count
 
-app_dir = "/home/bqtung/app_deploy_company/current"
-shared_dir = "/home/bqtung/app_deploy_company/shared"
+worker_timeout 3600 if ENV.fetch("RAILS_ENV", "development") == "development"
+
 # Specifies the `port` that Puma will listen on to receive requests; default is 3000.
 #
-port        ENV.fetch("PORT") { 3000 }
+port ENV.fetch("PORT") { 3000 }
 
 # Specifies the `environment` that Puma will run in.
 #
 environment ENV.fetch("RAILS_ENV") { "development" }
 
-directory app_dir
-rackup "#{app_dir}/config.ru"
-environment "production"
+# Specifies the `pidfile` that Puma will use.
+pidfile ENV.fetch("PIDFILE") { "tmp/pids/puma.pid" }
 
-tag ""
 
-pidfile "#{shared_dir}/tmp/pids/puma.pid"
-state_path "#{shared_dir}/tmp/pids/puma.state"
-stdout_redirect "#{shared_dir}/log/puma_access.log", "#{shared_dir}/log/puma_error.log", true
-
-threads 0,16
-
-bind "unix://#{shared_dir}/tmp/sockets/puma.sock"
-
-workers 0
-
-restart_command "bundle exec puma"
-
-prune_bundler
-
-on_restart do
-  puts "Refreshing Gemfile"
-  ENV["BUNDLE_GEMFILE"] = ""
-end
 # Specifies the number of `workers` to boot in clustered mode.
 # Workers are forked webserver processes. If using threads and workers together
 # the concurrency of the application would be max `threads` * `workers`.
